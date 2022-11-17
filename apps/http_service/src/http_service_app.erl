@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
-%% @doc rest_demo public API
+%% @doc http_service public API
 %% @end
 %%%-------------------------------------------------------------------
 
--module(rest_demo_app).
+-module(http_service_app).
 
 -behaviour(application).
 
@@ -11,15 +11,18 @@
 
 start(_StartType, _StartArgs) ->
     Dispatch = cowboy_router:compile([
-                                      {'_', [{"/", hello_handler, []}]}
+                                      {'_', get_paths()}
                                      ]),
     {ok, _} = cowboy:start_clear(my_http_listener,
                                  [{port, 8080}],
                                  #{env => #{dispatch => Dispatch}}
                                 ),
-    rest_demo_sup:start_link().
+
+    http_service_sup:start_link().
 
 stop(_State) ->
     ok.
 
 %% internal functions
+get_paths() ->
+    lists:flatten([Service:paths()|| Service <- application:get_env(http_service, services, [rest_demo_service])]).
